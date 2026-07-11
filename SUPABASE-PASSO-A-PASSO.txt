@@ -47,5 +47,22 @@ PASSO A PASSO - KINTSUGI SUSHI COM SUPABASE
    - altere o status
    - volte no pedido e aguarde atualizar
 
+13. Para login com e-mail e senha:
+   - no Supabase, va em Authentication
+   - va em Providers
+   - confira se Email esta ativado
+   - para testes, voce pode desligar a confirmacao de e-mail se quiser entrar imediatamente
+
+14. Para login com Google:
+   - no Supabase, va em Authentication > Providers
+   - ative Google
+   - siga as instrucoes do Supabase para preencher Client ID e Client Secret do Google
+   - em Authentication > URL Configuration, coloque o link do seu site em Site URL
+   - em Redirect URLs, adicione o link do seu site do GitHub Pages
+
+15. Depois de atualizar o SQL:
+   - rode novamente o conteudo de supabase-setup.sql no SQL Editor
+   - envie index.html e supabase-setup.sql atualizados para o GitHub
+
 OBSERVACAO IMPORTANTE
-Este login e bom para testes e aprendizado, mas nao e seguranca forte de producao. Para um restaurante real, o ideal e depois criar login com autenticacao do Supabase.
+O cliente agora usa autenticacao do Supabase. A administracao ainda usa login simples no HTML para facilitar seus testes.
