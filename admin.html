@@ -51,6 +51,7 @@
     </section>
   </main>
 
+  <script src="config.js"></script>
   <script>
     var ADMIN_USER='administracao';
     var ADMIN_PASS='123456';
@@ -70,11 +71,12 @@
       document.querySelector('#sessionStatus').textContent='Sessão ativa';
       render();
     }
-    function apiBase(){return location.protocol==='file:'?'':'/.netlify/functions'}
+    function supabaseConfig(){var c=window.KINTSUGI_SUPABASE||{};return c.url&&c.anonKey?c:null}
+    function supabaseEndpoint(path){var c=supabaseConfig();if(!c)return'';return c.url.replace(/\/$/,'')+'/rest/v1/'+(c.table||'pedidos')+path}
+    function supabaseHeaders(extra){var c=supabaseConfig(),h={'apikey':c.anonKey,'Authorization':'Bearer '+c.anonKey,'Content-Type':'application/json'};Object.keys(extra||{}).forEach(function(k){h[k]=extra[k]});return h}
     async function readOrders(){
-      var base=apiBase();
-      if(base){
-        try{var response=await fetch(base+'/pedidos');var data=await response.json();if(data&&data.pedidos)return data.pedidos}catch(error){}
+      if(supabaseConfig()){
+        try{var response=await fetch(supabaseEndpoint('?select=*&order=created_at.desc'),{headers:supabaseHeaders()});var data=await response.json();if(Array.isArray(data))return data}catch(error){}
       }
       try{return JSON.parse(localStorage.getItem('kintsugiOrders')||'[]')||[]}catch(error){return []}
     }
@@ -82,9 +84,9 @@
       return ['Pedido recebido','Preparando','Saiu para entrega','Entregue'][order.step||0]||'Pedido recebido'
     }
     async function updateStatus(id,code,step){
-      var base=apiBase();
-      if(base){
-        await fetch(base+'/pedidos',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,code:code,step:Number(step)})});
+      if(supabaseConfig()){
+        var filter=id?'?id=eq.'+encodeURIComponent(id):'?code=eq.'+encodeURIComponent(code);
+        await fetch(supabaseEndpoint(filter),{method:'PATCH',headers:supabaseHeaders(),body:JSON.stringify({step:Number(step)})});
       }else{
         var orders=await readOrders();
         orders=orders.map(function(order){if(order.code===code){order.step=Number(step)}return order});
@@ -118,7 +120,7 @@
     document.querySelector('#orders').addEventListener('change',function(e){var s=e.target.closest('[data-status-code]');if(!s)return;updateStatus(s.dataset.statusId,s.dataset.statusCode,s.value)});
     document.querySelector('#clearButton').addEventListener('click',async function(){
       if(!confirm('Limpar histórico de pedidos deste navegador?'))return;
-      if(apiBase())await fetch(apiBase()+'/pedidos',{method:'DELETE'});
+      if(supabaseConfig())await fetch(supabaseEndpoint('?id=not.is.null'),{method:'DELETE',headers:supabaseHeaders()});
       localStorage.removeItem('kintsugiOrders');
       localStorage.removeItem('kintsugiLastOrder');
       render();

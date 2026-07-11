@@ -1,0 +1,51 @@
+PASSO A PASSO - KINTSUGI SUSHI COM SUPABASE
+
+1. Crie uma conta em https://supabase.com
+
+2. Clique em New project.
+
+3. Depois que o projeto abrir, vá em SQL Editor.
+
+4. Abra este arquivo no seu computador:
+   supabase-setup.sql
+
+5. Copie todo o conteúdo do supabase-setup.sql, cole no SQL Editor do Supabase e clique em Run.
+
+6. No Supabase, vá em Project Settings > API.
+
+7. Copie:
+   - Project URL
+   - anon public key
+
+8. Abra este arquivo:
+   config.js
+
+9. Preencha assim:
+
+   window.KINTSUGI_SUPABASE = {
+     url: "COLE_A_PROJECT_URL_AQUI",
+     anonKey: "COLE_A_ANON_PUBLIC_KEY_AQUI",
+     table: "pedidos"
+   };
+
+10. Publique os arquivos da pasta publicar-netlify no GitHub.
+
+11. Se for usar GitHub Pages:
+   - entre no repositorio no GitHub
+   - Settings
+   - Pages
+   - Source: Deploy from a branch
+   - Branch: main
+   - Folder: /root
+   - Save
+
+12. Teste:
+   - faca um pedido no site
+   - abra admin.html
+   - login: administracao
+   - senha: 123456
+   - altere o status
+   - volte no pedido e aguarde atualizar
+
+OBSERVACAO IMPORTANTE
+Este login e bom para testes e aprendizado, mas nao e seguranca forte de producao. Para um restaurante real, o ideal e depois criar login com autenticacao do Supabase.
