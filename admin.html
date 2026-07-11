@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administração Kintsugi Sushi</title>
+  <style>
+    :root{--ink:#15110f;--muted:#706861;--paper:#f7f1e8;--surface:#fffdf8;--line:#e4d8c8;--nori:#12231d;--lacquer:#b21f2d;--gold:#c99a3c;--shadow:0 22px 58px rgba(18,35,29,.16)}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fbf6ed,var(--paper));color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}button{cursor:pointer}
+    header{padding:22px 18px;background:linear-gradient(135deg,var(--nori),#1d382f);color:#fff}header>div,main{width:min(1100px,100%);margin:0 auto}a{color:inherit}.top{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:12px}.mark{width:46px;height:46px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,var(--lacquer),#68121a);color:#ffe6ad;font-weight:950}.back{border:1px solid rgba(255,255,255,.26);border-radius:8px;padding:10px 12px;text-decoration:none;background:rgba(255,255,255,.08);font-weight:850}h1{margin:0;font-size:1.45rem}p{line-height:1.45}.muted{color:var(--muted)}main{padding:22px 18px 80px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.metric,.panel,.order,.login-card{border:1px solid var(--line);border-radius:8px;background:var(--surface);box-shadow:var(--shadow)}.metric{padding:14px}.metric span{display:block;color:var(--muted);font-size:.84rem;font-weight:850}.metric strong{display:block;margin-top:6px;font-size:1.5rem}.panel{padding:16px}.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.bar h2{margin:0;font-size:1.15rem}.actions{display:flex;gap:8px;flex-wrap:wrap}button{min-height:38px;border:0;border-radius:8px;padding:0 12px;background:var(--nori);color:#fff;font-weight:850}.ghost{background:#efe4d5;color:var(--ink)}.orders{display:grid;gap:10px}.order{padding:14px;box-shadow:none}.order-head{display:flex;align-items:start;justify-content:space-between;gap:12px}.order h3{margin:0;font-size:1rem}.status{border-radius:999px;padding:5px 9px;background:#f8e9c6;color:#7d4f10;font-size:.78rem;font-weight:950;white-space:nowrap}.order ul{margin:10px 0 0;padding-left:18px;color:var(--muted)}.order li+li{margin-top:4px}.empty{margin:0;padding:18px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);background:#fffaf3}.note{margin:14px 0 0;color:var(--muted);font-size:.9rem}.hidden{display:none!important}
+    .login-wrap{min-height:calc(100vh - 96px);display:grid;place-items:center;padding:28px 18px}.login-card{width:min(430px,100%);padding:20px}.login-card h2{margin:0 0 8px}.login-card form{display:grid;gap:12px;margin-top:16px}.login-card label{display:grid;gap:6px;color:var(--muted);font-size:.9rem;font-weight:850}.login-card input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;padding:0 12px;color:var(--ink);background:#fff}.error{min-height:20px;margin:0;color:var(--lacquer);font-weight:850}.session-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:rgba(255,255,255,.82);font-size:.9rem}
+    @media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.top,.bar,.order-head{align-items:stretch;flex-direction:column}}@media(max-width:460px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top">
+      <div class="brand"><div class="mark">金</div><div><h1>Administração Kintsugi</h1><p style="margin:4px 0 0;color:rgba(255,255,255,.78)">Pedidos de teste e acompanhamento local</p></div></div>
+      <div class="session-line"><span id="sessionStatus">Acesso bloqueado</span><button class="ghost hidden" id="logoutButton" type="button">Sair</button><a class="back" href="index.html">Voltar ao cardápio</a></div>
+    </div>
+  </header>
+
+  <section class="login-wrap" id="loginView">
+    <div class="login-card">
+      <h2>Entrar na administração</h2>
+      <p class="muted" style="margin:0">Use o acesso do restaurante para ver os pedidos deste navegador.</p>
+      <form id="loginForm" autocomplete="off">
+        <label>Usuário<input id="adminUser" autocomplete="username" placeholder="Usuário"></label>
+        <label>Senha<input id="adminPass" type="password" autocomplete="current-password" placeholder="Senha"></label>
+        <button type="submit">Entrar</button>
+        <p class="error" id="loginError"></p>
+      </form>
+      <p class="note">Login local para site estático. Para segurança real em produção, use proteção por senha do Netlify, Netlify Identity ou backend.</p>
+    </div>
+  </section>
+
+  <main class="hidden" id="adminView">
+    <section class="grid">
+      <div class="metric"><span>Pedidos salvos</span><strong id="totalOrders">0</strong></div>
+      <div class="metric"><span>Pedidos ativos</span><strong id="activeOrders">0</strong></div>
+      <div class="metric"><span>Entregues</span><strong id="doneOrders">0</strong></div>
+      <div class="metric"><span>Último pedido</span><strong id="lastOrder">-</strong></div>
+    </section>
+    <section class="panel">
+      <div class="bar">
+        <h2>Pedidos recebidos</h2>
+        <div class="actions"><button id="refreshButton" type="button">Atualizar</button><button class="ghost" id="clearButton" type="button">Limpar histórico</button></div>
+      </div>
+      <div class="orders" id="orders"></div>
+      <p class="note">Esta administração funciona no mesmo navegador e domínio do cardápio. Para recebimento real e multiusuário, é necessário backend.</p>
+    </section>
+  </main>
+
+  <script>
+    var ADMIN_USER='administracao';
+    var ADMIN_PASS='123456';
+    var SESSION_KEY='kintsugiAdminLogged';
+    function isLogged(){return sessionStorage.getItem(SESSION_KEY)==='true'}
+    function setLogged(value){if(value)sessionStorage.setItem(SESSION_KEY,'true');else sessionStorage.removeItem(SESSION_KEY)}
+    function showLogin(){
+      document.querySelector('#loginView').classList.remove('hidden');
+      document.querySelector('#adminView').classList.add('hidden');
+      document.querySelector('#logoutButton').classList.add('hidden');
+      document.querySelector('#sessionStatus').textContent='Acesso bloqueado';
+    }
+    function showAdmin(){
+      document.querySelector('#loginView').classList.add('hidden');
+      document.querySelector('#adminView').classList.remove('hidden');
+      document.querySelector('#logoutButton').classList.remove('hidden');
+      document.querySelector('#sessionStatus').textContent='Sessão ativa';
+      render();
+    }
+    function readOrders(){
+      try{return JSON.parse(localStorage.getItem('kintsugiOrders')||'[]')||[]}catch(error){return []}
+    }
+    function statusOf(order){
+      return ['Pedido recebido','Preparando','Saiu para entrega','Entregue'][order.step||0]||'Pedido recebido'
+    }
+    function render(){
+      var orders=readOrders();
+      var box=document.querySelector('#orders');
+      document.querySelector('#totalOrders').textContent=orders.length;
+      document.querySelector('#activeOrders').textContent=orders.filter(function(o){return (o.step||0)<3}).length;
+      document.querySelector('#doneOrders').textContent=orders.filter(function(o){return (o.step||0)>=3}).length;
+      document.querySelector('#lastOrder').textContent=orders[0]?orders[0].code:'-';
+      if(!orders.length){box.innerHTML='<p class="empty">Nenhum pedido salvo ainda.</p>';return}
+      box.innerHTML=orders.map(function(o){
+        var items=(o.items||[]).map(function(i){return '<li>'+i+'</li>'}).join('');
+        return '<article class="order"><div class="order-head"><div><h3>'+o.code+'</h3><p class="muted" style="margin:6px 0 0">'+(o.total||'')+' • '+(o.payment||'')+'</p></div><span class="status">'+statusOf(o)+'</span></div><ul>'+items+'</ul></article>';
+      }).join('');
+    }
+    document.querySelector('#loginForm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var user=document.querySelector('#adminUser').value.trim();
+      var pass=document.querySelector('#adminPass').value;
+      if(user===ADMIN_USER&&pass===ADMIN_PASS){setLogged(true);document.querySelector('#loginError').textContent='';showAdmin();return}
+      document.querySelector('#loginError').textContent='Usuário ou senha incorretos.';
+    });
+    document.querySelector('#logoutButton').addEventListener('click',function(){setLogged(false);showLogin()});
+    document.querySelector('#refreshButton').addEventListener('click',render);
+    document.querySelector('#clearButton').addEventListener('click',function(){
+      if(!confirm('Limpar histórico de pedidos deste navegador?'))return;
+      localStorage.removeItem('kintsugiOrders');
+      localStorage.removeItem('kintsugiLastOrder');
+      render();
+    });
+    if(isLogged())showAdmin();else showLogin();
+  </script>
+</body>
+</html>
