@@ -4,18 +4,18 @@ PASSO A PASSO - KINTSUGI SUSHI COM SUPABASE
 
 2. Clique em New project.
 
-3. Depois que o projeto abrir, vá em SQL Editor.
+3. Depois que o projeto abrir, va em SQL Editor.
 
 4. Abra este arquivo no seu computador:
    supabase-setup.sql
 
-5. Copie todo o conteúdo do supabase-setup.sql, cole no SQL Editor do Supabase e clique em Run.
+5. Copie todo o conteudo do supabase-setup.sql, cole no SQL Editor do Supabase e clique em Run.
 
-6. No Supabase, vá em Project Settings > API.
+6. No Supabase, va em Project Settings > API.
 
 7. Copie:
    - Project URL
-   - anon public key
+   - anon public key ou publishable key
 
 8. Abra este arquivo:
    config.js
@@ -24,13 +24,15 @@ PASSO A PASSO - KINTSUGI SUSHI COM SUPABASE
 
    window.KINTSUGI_SUPABASE = {
      url: "COLE_A_PROJECT_URL_AQUI",
-     anonKey: "COLE_A_ANON_PUBLIC_KEY_AQUI",
+     anonKey: "COLE_A_CHAVE_PUBLICA_AQUI",
      table: "pedidos"
    };
 
-10. Publique os arquivos da pasta publicar-netlify no GitHub.
+10. Nunca coloque secret key ou service role key no config.js.
 
-11. Se for usar GitHub Pages:
+11. Publique os arquivos da pasta publicar-netlify no GitHub.
+
+12. Se for usar GitHub Pages:
    - entre no repositorio no GitHub
    - Settings
    - Pages
@@ -39,30 +41,34 @@ PASSO A PASSO - KINTSUGI SUSHI COM SUPABASE
    - Folder: /root
    - Save
 
-12. Teste:
-   - faca um pedido no site
-   - abra admin.html
-   - login: administracao
-   - senha: 123456
-   - altere o status
-   - volte no pedido e aguarde atualizar
+13. Configure a URL do site no Supabase:
+   - Authentication
+   - URL Configuration
+   - Site URL: https://menufly.github.io/KintsugiSushi/
+   - Redirect URLs: https://menufly.github.io/KintsugiSushi/
 
-13. Para login com e-mail e senha:
-   - no Supabase, va em Authentication
-   - va em Providers
-   - confira se Email esta ativado
-   - para testes, voce pode desligar a confirmacao de e-mail se quiser entrar imediatamente
+14. Para criar o primeiro administrador:
+   - no site, crie uma conta normal com e-mail e senha
+   - no Supabase, va em Authentication > Users
+   - copie o ID do usuario que sera administrador
+   - va em SQL Editor
+   - rode este comando trocando o ID:
 
-14. Para login com Google:
-   - no Supabase, va em Authentication > Providers
-   - ative Google
-   - siga as instrucoes do Supabase para preencher Client ID e Client Secret do Google
-   - em Authentication > URL Configuration, coloque o link do seu site em Site URL
-   - em Redirect URLs, adicione o link do seu site do GitHub Pages
+   insert into public.admin_users (user_id, role)
+   values ('COLE_O_ID_DO_USUARIO_AQUI', 'admin')
+   on conflict (user_id) do update set role = 'admin';
 
-15. Depois de atualizar o SQL:
-   - rode novamente o conteudo de supabase-setup.sql no SQL Editor
-   - envie index.html e supabase-setup.sql atualizados para o GitHub
+15. Depois disso, acesse admin.html e entre com o e-mail e senha desse usuario.
+
+16. Teste:
+   - visitante acessando o cardapio sem login
+   - visitante adicionando item ao carrinho
+   - visitante finalizando pedido
+   - WhatsApp abrindo com a mensagem pronta
+   - pedido ficando em aguardando envio/confirmacao
+   - administrador acessando admin.html
+   - administrador alterando status do pedido
+   - cliente logado vendo apenas os proprios pedidos
 
 OBSERVACAO IMPORTANTE
-O cliente agora usa autenticacao do Supabase. A administracao ainda usa login simples no HTML para facilitar seus testes.
+O painel administrativo nao usa mais senha escrita no HTML. O acesso depende do Supabase Auth e da tabela admin_users.
